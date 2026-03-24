@@ -12,10 +12,33 @@ app.use(cors());
 app.use(express.json({ limit: '8mb' }));
 
 const openAIModel = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
-const geminiModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const hasGemini = Boolean(process.env.GEMINI_API_KEY);
 const hasOpenAI = Boolean(process.env.OPENAI_API_KEY);
 const openai = hasOpenAI ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const activeProvider = hasGemini ? 'gemini' : hasOpenAI ? 'openai' : 'fallback';
+let lastProviderError = null;
+
+function recordProviderError(provider, error) {
+  lastProviderError = {
+    provider,
+    message: error instanceof Error ? error.message : String(error),
+    at: new Date().toISOString(),
+  };
+  console.error('[' + provider + '] provider request failed', error);
+}
+
+function getProviderDebugMessage() {
+  if (!hasGemini && !hasOpenAI) {
+    return 'No GEMINI_API_KEY or OPENAI_API_KEY is available in the deployed server environment.';
+  }
+
+  if (lastProviderError?.message) {
+    return `${lastProviderError.provider || 'provider'} error: ${lastProviderError.message}`;
+  }
+
+  return `Provider selected: ${activeProvider}. The request still fell back before a live response was returned.`;
+}
 const STOP_WORDS = new Set([
   'the','a','an','and','or','but','if','then','than','that','this','these','those','is','are','was','were','be','been','being','of','to','in','on','for','with','as','by','at','from','it','its','into','about','over','after','before','between','through','during','without','within','also','can','could','should','would','will','may','might','do','does','did','done','have','has','had','having','we','you','they','he','she','them','their','our','your','his','her','not','no','yes','such','more','most','some','any','all','each','every','many','much','other','another','because','while','where','when','what','which','who','whom'
 ]);
@@ -599,6 +622,7 @@ async function askLiveAssistant(prompt, context) {
       const payload = await generateWithGemini(teacherPrompt);
       return { reply: extractTextFromGemini(payload) || 'I could not generate a response just now.', source: 'gemini' };
     } catch (error) {
+      recordProviderError('gemini', error);
       console.warn('Gemini assistant failed, using fallback response.', error);
     }
   }
@@ -614,13 +638,15 @@ async function askLiveAssistant(prompt, context) {
       });
       return { reply: response.output_text || 'I could not generate a response just now.', source: 'openai' };
     } catch (error) {
+      recordProviderError('openai', error);
       console.warn('OpenAI assistant failed, using fallback response.', error);
     }
   }
 
   return {
-    reply: `NeuroVerse demo mode: ${prompt} relates to ${context?.topic || 'this topic'}. Connect an AI key to get live tutoring answers.`,
+    reply: `NeuroVerse demo mode: ${prompt} relates to ${context?.topic || 'this topic'}. ${getProviderDebugMessage()}`,
     source: 'fallback',
+    error: getProviderDebugMessage(),
   };
 }
 
@@ -663,6 +689,7 @@ async function generateLiveLearning(topic, studyMode = 'Quick Summary', difficul
       return { ...result, studyMode, difficulty };
     }
   } catch (error) {
+    recordProviderError(activeProvider, error);
     console.warn('Topic learning generation failed, using fallback.', error);
   }
 
@@ -671,11 +698,19 @@ async function generateLiveLearning(topic, studyMode = 'Quick Summary', difficul
 
 async function generateLiveQuiz(topic, difficulty = 'Medium') {
   const learning = await generateLiveLearning(topic, 'Exam Prep', difficulty);
-  return { questions: learning.quiz, source: hasGemini ? 'gemini' : hasOpenAI ? 'openai' : 'fallback' };
+  return { questions: learning.quiz, source: activeProvider };
 }
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, provider: hasGemini ? 'gemini' : hasOpenAI ? 'openai' : 'fallback' });
+  res.json({
+    ok: true,
+    provider: activeProvider,
+    hasOpenAI,
+    hasGemini,
+    openAIModel: hasOpenAI ? openAIModel : null,
+    geminiModel: hasGemini ? geminiModel : null,
+    lastProviderError,
+  });
 });
 
 app.post('/api/learn', async (req, res) => {

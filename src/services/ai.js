@@ -1,5 +1,6 @@
 const configuredBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
 const API_BASE_URL = configuredBaseUrl.replace(/\/$/, '');
+const isProduction = Boolean(import.meta.env.PROD);
 
 const STOP_WORDS = new Set([
   'the','a','an','and','or','but','if','then','than','that','this','these','those','is','are','was','were','be','been','being','of','to','in','on','for','with','as','by','at','from','it','its','into','about','over','after','before','between','through','during','without','within','also','can','could','should','would','will','may','might','do','does','did','done','have','has','had','having','we','you','they','he','she','them','their','our','your','his','her','not','no','yes','such','more','most','some','any','all','each','every','many','much','other','another','because','while','where','when','what','which','who','whom'
@@ -7,6 +8,22 @@ const STOP_WORDS = new Set([
 
 function buildUrl(path) {
   return API_BASE_URL ? `${API_BASE_URL}${path}` : path;
+}
+
+function getDeploymentConfigError() {
+  if (!isProduction || typeof window === 'undefined') {
+    return '';
+  }
+
+  if (!API_BASE_URL) {
+    return '';
+  }
+
+  if (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1')) {
+    return 'NeuroVerse frontend is pointing to localhost in production. Remove VITE_API_BASE_URL for same-project Vercel APIs, or set it to your live backend URL and redeploy.';
+  }
+
+  return '';
 }
 
 function splitSentences(text) {
@@ -140,6 +157,11 @@ function createFallbackDocumentLearning(fileName, content, options = {}) {
 }
 
 async function postJson(path, body, fallbackFactory) {
+  const deploymentConfigError = getDeploymentConfigError();
+  if (deploymentConfigError) {
+    throw new Error(deploymentConfigError);
+  }
+
   try {
     const response = await fetch(buildUrl(path), {
       method: 'POST',
@@ -188,3 +210,4 @@ export async function generateQuiz(topic, options = {}) {
     source: 'client-fallback',
   }));
 }
+
