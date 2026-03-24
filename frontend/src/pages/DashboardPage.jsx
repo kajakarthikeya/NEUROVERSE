@@ -40,12 +40,12 @@ export function DashboardPage() {
         <Sidebar />
       </div>
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-12">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-12 flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mx-auto max-w-5xl"
+          className="w-full max-w-6xl mx-auto"
         >
           <header className="mb-10">
             <h1 className="text-4xl font-semibold tracking-tight text-white lg:text-5xl">

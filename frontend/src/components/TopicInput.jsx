@@ -22,14 +22,14 @@ export function TopicInput({
   listening = false,
 }) {
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="mx-auto max-w-3xl text-center">
-        <div className="mx-auto mb-4 inline-flex rounded-full border border-teal-300/20 bg-teal-400/10 px-4 py-2 text-sm text-teal-100 shadow-[0_0_20px_rgba(45,212,191,0.2)]">
+    <div className="w-full flex flex-col items-center">
+      <div className="w-full max-w-3xl text-center flex flex-col items-center">
+        <div className="mb-4 inline-flex items-center rounded-full border border-teal-300/20 bg-teal-400/10 px-4 py-2 text-sm text-teal-100 shadow-[0_0_20px_rgba(45,212,191,0.2)]">
           <Sparkles className="mr-2 h-4 w-4 text-teal-300" />
           Adaptive AI Learning Generator
         </div>
-        <h1 className="text-4xl font-bold text-white text-center pb-2">{title}</h1>
-        <p className="mt-4 text-slate-400 text-center max-w-xl mx-auto text-sm leading-relaxed">{description}</p>
+        <h1 className="w-full text-center text-4xl font-bold text-white pb-2 leading-tight">{title}</h1>
+        <p className="mt-4 text-center max-w-xl text-slate-400 text-sm leading-relaxed">{description}</p>
       </div>
 
       <form onSubmit={onSubmit} className="mt-10 max-w-3xl mx-auto space-y-4">

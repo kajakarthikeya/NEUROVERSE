@@ -330,34 +330,34 @@ export function LearningScenePage() {
   const weakSuggestions = progress?.weakTopics?.slice(0, 3) || [];
 
   return (
-    <main className="page-shell min-h-screen px-4 py-6 text-white sm:px-6 lg:px-8 bg-[#0B0F1A]">
-      <div className="relative z-10 mx-auto grid max-w-[1500px] gap-6 xl:grid-cols-[1fr_400px] items-start">
+    <main className="page-shell min-h-screen px-4 py-10 text-white sm:px-6 lg:px-8 bg-[#0B0F1A]">
+      <div className="relative z-10 mx-auto grid max-w-[1500px] gap-8 xl:grid-cols-[1fr_400px] items-start justify-center">
         {/* LEFT PANE: 3D Content & Interactive Learning */}
-        <div className="space-y-6 flex flex-col min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-8 flex flex-col min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.35em] text-cyan-200">Learning Studio</p>
-              <h1 className="mt-2 text-4xl font-semibold text-white">Adaptive AI learning workspace</h1>
+              <p className="text-sm uppercase font-bold tracking-[0.4em] text-cyan-300/80">Learning Studio</p>
+              <h1 className="mt-3 text-4xl lg:text-5xl font-bold text-white tracking-tight">Adaptive AI learning workspace</h1>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button as={Link} to="/dashboard" variant="secondary" className="bg-white/5 border-white/10 hover:bg-white/10">
+            <div className="flex flex-wrap gap-4">
+              <Button as={Link} to="/dashboard" variant="secondary" className="!rounded-2xl bg-white/5 border-white/10 hover:bg-white/10">
                 Back to Dashboard
               </Button>
-              <Button type="button" onClick={handleExperienceMode} className="bg-white/5 border-white/10 hover:bg-white/10">
+              <Button type="button" onClick={handleExperienceMode} className="!rounded-2xl bg-white/5 border-white/10 hover:bg-white/10">
                 <Expand className="mr-2 h-4 w-4" />
                 {immersive ? 'Exit Split Mode' : 'Enter Immersive View'}
               </Button>
             </div>
           </div>
-
-          <GlassCard className="overflow-hidden p-0 flex flex-col" hover={false}>
+ 
+          <GlassCard className="overflow-hidden p-0 flex flex-col rounded-[32px] border-white/10" hover={false}>
             {/* 3D Scene Area */}
-            <div className="relative h-[260px] w-full shrink-0 flex items-center justify-center bg-gradient-to-b from-transparent to-slate-950/40">
+            <div className="relative h-[300px] w-full shrink-0 flex items-center justify-center bg-gradient-to-b from-transparent to-slate-950/40">
               <KnowledgeScene topic={activeTopic} />
             </div>
             
             {/* Input Controls Area */}
-            <div className="relative w-full border-t border-white/5 bg-black/40 p-6 sm:p-10 flex flex-col items-center justify-center">
+            <div className="relative w-full border-t border-white/5 bg-black/40 p-8 sm:p-12 flex flex-col items-center justify-center">
               <TopicInput
                 value={topic}
                 onChange={setTopic}
