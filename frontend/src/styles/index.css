@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --bg-start: #0f172a;
+  --bg-end: #020617;
+  --text-primary: #ffffff;      /* Pure white as requested */
+  --text-secondary: #94a3b8;    /* Soft gray */
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--text-primary);
+  /* Futuristic Gradient Background */
+  background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Moving/animating background effect */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.08), transparent 30%),
+    radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.08), transparent 30%);
+  filter: blur(40px);
+  animation: bgOrbit 30s linear infinite;
+  pointer-events: none;
+  z-index: -2;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.05) 1px, transparent 0);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.3);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #38bdf8, #8b5cf6);
+  border-radius: 999px;
+}
+
+@layer components {
+  /* Requested reusable classes */
+  .glass {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)];
+  }
+
+  .glow {
+    @apply shadow-[0_0_20px_rgba(56,189,248,0.4)];
+  }
+
+  .glow-focus:focus {
+    @apply shadow-[0_0_15px_rgba(56,189,248,0.5)] border-[#38bdf8] outline-none;
+  }
+
+  /* Keep legacy classes if components still use them */
+  .glass-panel {
+    @apply glass;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.68), rgba(15, 23, 42, 0.52));
+  }
+  .neon-outline {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  .premium-input {
+    @apply rounded-xl border border-white/20 bg-transparent text-white outline-none transition-all duration-300 glow-focus;
+  }
+
+  .page-shell {
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+@keyframes bgOrbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

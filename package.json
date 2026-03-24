@@ -1,0 +1,40 @@
+{
+  "name": "neuroverse",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "vite frontend",
+    "dev:server": "node --watch backend/index.js",
+    "build": "vite build frontend",
+    "preview": "vite preview frontend",
+    "lint": "echo \"Linting not configured yet\""
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.0.8",
+    "@react-three/fiber": "^9.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "firebase": "^11.8.1",
+    "framer-motion": "^12.23.12",
+    "jspdf": "^2.5.2",
+    "lucide-react": "^0.511.0",
+    "mammoth": "^1.9.1",
+    "openai": "^5.10.1",
+    "pdfjs-dist": "^4.10.38",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.6.2",
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.3.5"
+  }
+}
