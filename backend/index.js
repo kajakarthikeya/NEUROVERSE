@@ -13,11 +13,13 @@ app.use(express.json({ limit: '8mb' }));
 
 const openAIModel = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const fallbackGeminiModel = 'gemini-2.5-flash';
 const hasGemini = Boolean(process.env.GEMINI_API_KEY);
 const hasOpenAI = Boolean(process.env.OPENAI_API_KEY);
 const openai = hasOpenAI ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 const activeProvider = hasGemini ? 'gemini' : hasOpenAI ? 'openai' : 'fallback';
 let lastProviderError = null;
+let lastResolvedGeminiModel = hasGemini ? geminiModel : null;
 
 function recordProviderError(provider, error) {
   lastProviderError = {
@@ -405,27 +407,39 @@ function getFallbackLearning(topic, studyMode = 'Quick Summary', difficulty = 'M
 }
 
 async function generateWithGemini(prompt) {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.15,
-          responseMimeType: 'text/plain',
-        },
-      }),
-    },
-  );
+  const modelCandidates = [...new Set([geminiModel, fallbackGeminiModel].filter(Boolean))];
+  let lastError = null;
 
-  if (!response.ok) {
+  for (const modelName of modelCandidates) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.15,
+            responseMimeType: 'text/plain',
+          },
+        }),
+      },
+    );
+
+    if (response.ok) {
+      lastResolvedGeminiModel = modelName;
+      return response.json();
+    }
+
     const errorText = await response.text();
-    throw new Error(errorText || 'Gemini request failed.');
+    lastError = new Error(errorText || `Gemini request failed for ${modelName}.`);
+
+    if (response.status !== 404) {
+      throw lastError;
+    }
   }
 
-  return response.json();
+  throw lastError || new Error('Gemini request failed.');
 }
 
 async function generateJsonGemini(prompt) {
@@ -620,7 +634,7 @@ async function askLiveAssistant(prompt, context) {
   if (hasGemini) {
     try {
       const payload = await generateWithGemini(teacherPrompt);
-      return { reply: extractTextFromGemini(payload) || 'I could not generate a response just now.', source: 'gemini' };
+      return { reply: extractTextFromGemini(payload) || 'I could not generate a response just now.', source: 'gemini', model: lastResolvedGeminiModel };
     } catch (error) {
       recordProviderError('gemini', error);
       console.warn('Gemini assistant failed, using fallback response.', error);
@@ -709,6 +723,7 @@ app.get('/api/health', (_req, res) => {
     hasGemini,
     openAIModel: hasOpenAI ? openAIModel : null,
     geminiModel: hasGemini ? geminiModel : null,
+    resolvedGeminiModel: hasGemini ? lastResolvedGeminiModel : null,
     lastProviderError,
   });
 });
